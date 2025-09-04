@@ -1,5 +1,6 @@
 package praktikum.tests;
 
+import io.qameta.allure.junit4.DisplayName;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,6 +15,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
+@DisplayName("Тесты класса Burger")
 public class BurgerTest {
 
     @Mock
@@ -28,39 +30,45 @@ public class BurgerTest {
     private Burger burger;
 
     @Before
+    @DisplayName("Инициализация бургера перед каждым тестом")
     public void setUp() {
         burger = new Burger();
     }
 
     @Test
-    public void testSetBuns() {
+    @DisplayName("Тест установки булочки")
+    public void setBunsTest() {
         burger.setBuns(bun);
-        // Проверка, что булочка установлена
+        assertNotNull("Булочка должна быть установлена", burger.bun);
     }
 
     @Test
-    public void testAddIngredient() {
+    @DisplayName("Тест добавления ингредиента")
+    public void addIngredientTest() {
         burger.addIngredient(ingredient1);
-        // Проверка, что ингредиент добавлен
+        assertEquals("Должен быть добавлен один ингредиент", 1, burger.ingredients.size());
     }
 
     @Test
-    public void testRemoveIngredient() {
+    @DisplayName("Тест удаления ингредиента")
+    public void removeIngredientTest() {
         burger.addIngredient(ingredient1);
         burger.removeIngredient(0);
-        // Проверка, что ингредиент удален
+        assertTrue("Ингредиент должен быть удален", burger.ingredients.isEmpty());
     }
 
     @Test
-    public void testMoveIngredient() {
+    @DisplayName("Тест перемещения ингредиента")
+    public void moveIngredientTest() {
         burger.addIngredient(ingredient1);
         burger.addIngredient(ingredient2);
         burger.moveIngredient(0, 1);
-        // Проверка перемещения
+        assertEquals("Ингредиенты должны быть перемещены", 2, burger.ingredients.size());
     }
 
     @Test
-    public void testGetPrice() {
+    @DisplayName("Тест расчета цены бургера")
+    public void getPriceTest() {
         when(bun.getPrice()).thenReturn(100f);
         when(ingredient1.getPrice()).thenReturn(50f);
 
@@ -72,7 +80,8 @@ public class BurgerTest {
     }
 
     @Test
-    public void testGetReceipt() {
+    @DisplayName("Тест генерации чека")
+    public void getReceiptTest() {
         when(bun.getName()).thenReturn("black bun");
         when(ingredient1.getType()).thenReturn(IngredientType.SAUCE);
         when(ingredient1.getName()).thenReturn("hot sauce");
