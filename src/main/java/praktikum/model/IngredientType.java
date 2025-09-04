@@ -1,4 +1,4 @@
-package praktikum.ingredients;
+package praktikum.model;
 
 /**
  * Перечисление с типами ингредиентов.

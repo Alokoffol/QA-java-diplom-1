@@ -1,8 +1,8 @@
-package praktikum;
+package praktikum.database;
 
-import praktikum.ingredients.Bun;
-import praktikum.ingredients.Ingredient;
-import praktikum.ingredients.IngredientType;
+import praktikum.model.Bun;
+import praktikum.model.Ingredient;
+import praktikum.model.IngredientType;
 
 import java.util.ArrayList;
 import java.util.List;

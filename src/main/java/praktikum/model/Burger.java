@@ -1,7 +1,4 @@
-package praktikum;
-
-import praktikum.ingredients.Bun;
-import praktikum.ingredients.Ingredient;
+package praktikum.model;
 
 import java.util.ArrayList;
 import java.util.List;
