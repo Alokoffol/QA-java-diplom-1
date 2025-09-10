@@ -24,4 +24,4 @@ logs/
 *.class
 *.jar
 *.war
-*.ear
+*.ear.allure/
