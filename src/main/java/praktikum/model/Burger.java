@@ -2,6 +2,7 @@ package praktikum.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Модель бургера.
@@ -49,7 +50,9 @@ public class Burger {
         }
 
         receipt.append(String.format("(==== %s ====)%n", bun.getName()));
-        receipt.append(String.format("%nPrice: %f%n", getPrice()));
+
+        // Используем Locale.US для гарантированного использования точки как десятичного разделителя
+        receipt.append(String.format(Locale.US, "%nPrice: %.2f%n", getPrice()));
 
         return receipt.toString();
     }
