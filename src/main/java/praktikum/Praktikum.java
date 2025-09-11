@@ -1,5 +1,10 @@
 package praktikum;
 
+import praktikum.database.Database;
+import praktikum.model.Bun;
+import praktikum.model.Burger;
+import praktikum.model.Ingredient;
+
 import java.util.List;
 
 public class Praktikum {
