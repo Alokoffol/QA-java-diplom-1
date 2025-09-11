@@ -4,19 +4,29 @@ import praktikum.model.IngredientType;
 
 public class BurgerTestData {
 
-    public static Object[][] getReceiptTestData() {
+    // Для тестирования формата чека
+    public static Object[][] getReceiptFormatData() {
         return new Object[][] {
-                {"black bun", IngredientType.SAUCE, "hot sauce", "black bun", "hot sauce"},
-                {"white bun", IngredientType.FILLING, "cutlet", "white bun", "cutlet"},
-                {"red bun", IngredientType.SAUCE, "chili sauce", "red bun", "chili sauce"}
+                {"Black Bun with Hot Sauce", "black bun", IngredientType.SAUCE, "hot sauce"},
+                {"White Bun with Cutlet", "white bun", IngredientType.FILLING, "cutlet"},
+                {"Red Bun with Chili Sauce", "red bun", IngredientType.SAUCE, "chili sauce"}
         };
     }
 
-    public static Object[][] getPriceTestData() {
+    // Для тестирования расчета цены
+    public static Object[][] getPriceCalculationData() {
         return new Object[][] {
-                {100f, 50f, 250f}, // bunPrice, ingredientPrice, expectedTotal
-                {200f, 100f, 500f},
-                {300f, 150f, 750f}
+                {100.0f, 50.0f, 250.0f},   // стандартные цены
+                {200.0f, 100.0f, 500.0f},  // высокие цены
+                {50.0f, 25.0f, 125.0f}     // низкие цены
+        };
+    }
+
+    // Для тестирования разных типов ингредиентов
+    public static Object[][] getIngredientTypesData() {
+        return new Object[][] {
+                {IngredientType.SAUCE, "sauce"},
+                {IngredientType.FILLING, "filling"}
         };
     }
 }

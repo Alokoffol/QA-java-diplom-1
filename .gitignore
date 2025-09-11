@@ -25,3 +25,7 @@ logs/
 *.jar
 *.war
 *.ear.allure/
+
+# JaCoCo reports
+/target/jacoco*
+/target/site/jacoco*

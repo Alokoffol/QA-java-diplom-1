@@ -3,155 +3,173 @@ package praktikum.tests;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.MockitoAnnotations;
 import praktikum.model.Bun;
 import praktikum.model.Burger;
 import praktikum.model.Ingredient;
 import praktikum.model.IngredientType;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Locale;
 
-@RunWith(MockitoJUnitRunner.class)
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
+import static praktikum.tests.TestConstants.*;
+
+@RunWith(Parameterized.class)
 public class BurgerTest {
 
     @Mock
     private Bun bun;
 
     @Mock
-    private Ingredient sauceIngredient;
-
-    @Mock
-    private Ingredient fillingIngredient;
+    private Ingredient ingredient;
 
     private Burger burger;
 
+    private final String testName;
+    private final String testBunName;
+    private final String testIngredientName;
+    private final IngredientType testIngredientType;
+
+    public BurgerTest(String testName, String bunName, IngredientType ingredientType, String ingredientName) {
+        this.testName = testName;
+        this.testBunName = bunName;
+        this.testIngredientType = ingredientType;
+        this.testIngredientName = ingredientName;
+    }
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Collection<Object[]> testData() {
+        return Arrays.asList(BurgerTestData.getReceiptFormatData());
+    }
+
     @Before
     public void setUp() {
+        MockitoAnnotations.openMocks(this);
         burger = new Burger();
     }
 
     @Test
-    public void setBunsTest() {
+    public void shouldHandleBunAndIngredientOperations() {
+        // Проверяем установку булочки
         burger.setBuns(bun);
-        assertNotNull("Булочка должна быть установлена", burger.bun);
-    }
+        assertSame("Булочка должна быть установлена", bun, burger.bun);
 
-    @Test
-    public void addIngredientTest() {
-        burger.addIngredient(sauceIngredient);
+        // Проверяем добавление ингредиента
+        burger.addIngredient(ingredient);
         assertEquals("Должен быть добавлен один ингредиент", 1, burger.ingredients.size());
-    }
+        assertSame("Ингредиент должен быть добавлен в список", ingredient, burger.ingredients.get(0));
 
-    @Test
-    public void removeIngredientTest() {
-        burger.addIngredient(sauceIngredient);
+        // Проверяем удаление ингредиента
         burger.removeIngredient(0);
         assertTrue("Ингредиент должен быть удален", burger.ingredients.isEmpty());
     }
 
     @Test
-    public void moveIngredientTest() {
-        burger.addIngredient(sauceIngredient);
-        burger.addIngredient(fillingIngredient);
+    public void shouldMoveIngredientCorrectly() {
+        Ingredient firstIngredient = ingredient;
+        Ingredient secondIngredient = new Ingredient(IngredientType.FILLING, "second", 100);
+
+        burger.addIngredient(firstIngredient);
+        burger.addIngredient(secondIngredient);
+
         burger.moveIngredient(0, 1);
-        assertEquals("Ингредиенты должны быть перемещены", 2, burger.ingredients.size());
+
+        assertSame("Ингредиенты должны быть перемещены", secondIngredient, burger.ingredients.get(0));
+        assertSame("Ингредиенты должны быть перемещены", firstIngredient, burger.ingredients.get(1));
     }
 
     @Test
-    public void getPriceTest() {
-        when(bun.getPrice()).thenReturn(100f);
-        when(sauceIngredient.getPrice()).thenReturn(50f);
-
+    public void shouldCalculatePricesCorrectly() {
+        // Проверяем расчет цены только с булочкой
+        when(bun.getPrice()).thenReturn(BUN_PRICE_100);
         burger.setBuns(bun);
-        burger.addIngredient(sauceIngredient);
+        float bunOnlyPrice = BUN_PRICE_100 * 2;
+        assertEquals("Цена только с булочкой должна быть рассчитана правильно",
+                bunOnlyPrice, burger.getPrice(), PRICE_DELTA);
 
-        float expectedPrice = 250f;
-        assertEquals("Цена бургера рассчитана неверно", expectedPrice, burger.getPrice(), 0.01f);
+        // Проверяем расчет цены с булочкой и ингредиентом
+        when(ingredient.getPrice()).thenReturn(INGREDIENT_PRICE_50);
+        burger.addIngredient(ingredient);
+        float totalPrice = bunOnlyPrice + INGREDIENT_PRICE_50;
+        assertEquals("Цена с булочкой и ингредиентом должна быть рассчитана правильно",
+                totalPrice, burger.getPrice(), PRICE_DELTA);
     }
 
     @Test
-    public void getReceiptFormatTest() {
-        when(bun.getName()).thenReturn("black bun");
-        when(sauceIngredient.getType()).thenReturn(IngredientType.SAUCE);
-        when(sauceIngredient.getName()).thenReturn("hot sauce");
-        when(sauceIngredient.getPrice()).thenReturn(50f);
-        when(bun.getPrice()).thenReturn(100f);
+    public void shouldGenerateCorrectReceiptFormat() {
+        when(bun.getName()).thenReturn(testBunName);
+        when(bun.getPrice()).thenReturn(BUN_PRICE_100);
+        when(ingredient.getType()).thenReturn(testIngredientType);
+        when(ingredient.getName()).thenReturn(testIngredientName);
+        when(ingredient.getPrice()).thenReturn(INGREDIENT_PRICE_50);
 
         burger.setBuns(bun);
-        burger.addIngredient(sauceIngredient);
+        burger.addIngredient(ingredient);
 
         String receipt = burger.getReceipt();
+        String[] lines = receipt.split("\n");
 
-        // Нормализуем переносы строк для кроссплатформенности
-        String normalizedReceipt = receipt.replace("\r\n", "\n").replace("\r", "\n");
-
-        // Проверяем отдельные части чека вместо полного сравнения
-        assertTrue("Чек должен содержать название булочки", normalizedReceipt.contains("black bun"));
-        assertTrue("Чек должен содержать ингредиент sauce", normalizedReceipt.contains("sauce hot sauce"));
-        assertTrue("Чек должен содержать цену", normalizedReceipt.contains("Price:"));
-        assertTrue("Чек должен содержать разделители ====", normalizedReceipt.contains("===="));
-
-        // Проверяем, что цена содержит ожидаемое значение (250.00 или 250,00 в зависимости от локали)
-        assertTrue("Чек должен содержать правильную цену",
-                normalizedReceipt.contains("250.00") || normalizedReceipt.contains("250,00"));
+        assertTrue("Чек должен начинаться с верхней булочки", lines[0].contains(testBunName));
+        assertTrue("Чек должен содержать ингредиент", lines[1].contains(testIngredientName.toLowerCase()));
+        assertTrue("Чек должен заканчиваться нижней булочкой", lines[2].contains(testBunName));
+        assertTrue("Предпоследняя строка должна быть пустой", lines[3].trim().isEmpty());
+        assertTrue("Чек должен содержать секцию цены", lines[4].contains("Price:"));
     }
 
     @Test
-    public void getReceiptContainsCorrectPriceTest() {
-        when(bun.getName()).thenReturn("black bun");
-        when(bun.getPrice()).thenReturn(100f);
-        when(sauceIngredient.getType()).thenReturn(IngredientType.SAUCE);
-        when(sauceIngredient.getName()).thenReturn("hot sauce");
-        when(sauceIngredient.getPrice()).thenReturn(50f);
+    public void shouldContainCorrectIngredientTypeInReceipt() {
+        when(bun.getName()).thenReturn(testBunName);
+        when(ingredient.getType()).thenReturn(testIngredientType);
+        when(ingredient.getName()).thenReturn(testIngredientName);
 
         burger.setBuns(bun);
-        burger.addIngredient(sauceIngredient);
+        burger.addIngredient(ingredient);
 
         String receipt = burger.getReceipt();
+        String expectedType = testIngredientType.toString().toLowerCase();
 
-        // Проверяем только цену (учитываем разные форматы десятичных разделителей)
-        assertTrue("Чек должен содержать правильную цену 250",
-                receipt.contains("250.00") || receipt.contains("250,00"));
+        assertTrue("Чек должен содержать тип ингредиента: " + expectedType,
+                receipt.contains(expectedType));
     }
 
     @Test
-    public void getReceiptStructureTest() {
-        when(bun.getName()).thenReturn("test bun");
-        when(bun.getPrice()).thenReturn(100f);
-        when(sauceIngredient.getType()).thenReturn(IngredientType.SAUCE);
-        when(sauceIngredient.getName()).thenReturn("test sauce");
-        when(sauceIngredient.getPrice()).thenReturn(50f);
+    public void shouldContainCorrectPriceInReceipt() {
+        when(bun.getPrice()).thenReturn(BUN_PRICE_100);
+        when(ingredient.getPrice()).thenReturn(INGREDIENT_PRICE_50);
+        when(bun.getName()).thenReturn(BLACK_BUN_NAME);
+        when(ingredient.getType()).thenReturn(IngredientType.SAUCE);
+        when(ingredient.getName()).thenReturn(HOT_SAUCE_NAME);
 
         burger.setBuns(bun);
-        burger.addIngredient(sauceIngredient);
+        burger.addIngredient(ingredient);
 
         String receipt = burger.getReceipt();
-        String[] lines = receipt.split("\r\n|\n|\r");
+        float expectedPrice = BUN_PRICE_100 * 2 + INGREDIENT_PRICE_50;
 
-        // Проверяем структуру чека
-        assertTrue("Чек должен содержать минимум 5 строк", lines.length >= 5);
-        assertTrue("Первая строка должна содержать булочку", lines[0].contains("test bun"));
+        assertTrue("Чек должен содержать правильную цену: " + expectedPrice,
+                receipt.contains(String.format(Locale.US, "%.2f", expectedPrice)));
+    }
 
-        // Ищем строку с ингредиентом
-        boolean hasIngredientLine = false;
-        for (String line : lines) {
-            if (line.contains("test sauce")) {
-                hasIngredientLine = true;
-                break;
-            }
-        }
-        assertTrue("Чек должен содержать ингредиент", hasIngredientLine);
+    @Test
+    public void shouldWorkWithDifferentIngredientTypes() {
+        // Этот тест покрывает параметризованные данные для разных типов ингредиентов
+        when(bun.getName()).thenReturn(testBunName);
+        when(ingredient.getType()).thenReturn(testIngredientType);
+        when(ingredient.getName()).thenReturn(testIngredientName);
 
-        // Ищем строку с ценой
-        boolean hasPriceLine = false;
-        for (String line : lines) {
-            if (line.contains("Price:")) {
-                hasPriceLine = true;
-                break;
-            }
-        }
-        assertTrue("Чек должен содержать цену", hasPriceLine);
+        burger.setBuns(bun);
+        burger.addIngredient(ingredient);
+
+        String receipt = burger.getReceipt();
+        String expectedType = testIngredientType.toString().toLowerCase();
+
+        // Проверяем, что чек генерируется и содержит тип ингредиента
+        assertNotNull("Чек должен быть сгенерирован", receipt);
+        assertTrue("Чек должен содержать тип ингредиента", receipt.contains(expectedType));
     }
 }
